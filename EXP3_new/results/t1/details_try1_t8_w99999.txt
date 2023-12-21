@@ -1,0 +1,12 @@
+use_db : mnist
+result_root_dir : results/t1/
+result_path : try1_t8_w99999
+g_weight : [9, 9, 9, 9, 9]
+book_keep_freq : 20
+g_times : 8
+g_epochs : 1
+alpha_0 : 0.001
+freq_reduce_by : 20
+freq_reduce_after : 100
+training_step_limit : 2000000
+stop_hess_computation : 1000000

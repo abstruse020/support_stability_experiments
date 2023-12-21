@@ -1,0 +1,13 @@
+use_db : fashion_mnist
+result_root_dir : results/t3/
+result_path : try2f_t5_r.4
+ratio : 0.4
+book_keep_freq : 20
+g_times : 5
+g_epochs : 1
+alpha_0 : 0.001
+freq_reduce_by : 20
+freq_reduce_after : 100
+training_step_limit : 100000
+stop_hess_computation : 20000
+g_weight : 10
