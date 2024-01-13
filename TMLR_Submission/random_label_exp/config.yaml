@@ -1,0 +1,27 @@
+exp_name: ex2.2_mnist_l32_r10_s10_sloss
+description: Experiment for Variance lower bound with StepLoss and disjoint test set from train (made replace = False) Small
+epochs: 500
+z_times: 30
+s_times: 10
+r_times: 10
+optimizer: 
+  name: sgd
+  lr: 0.01
+  wt_decay: 0.0
+data:  
+  name: mnist
+  randomize: True
+  train_size: 100
+  test_size: 30
+  shuffle: True
+  batch_size: 16
+  num_classes: 2
+  num_features: 784
+  train_sets_size: [100, 150, 200, 250, 300, 350, 400]
+  replace: False
+model:
+  name: fnn
+  layers: [32]
+train_file: train_file.csv
+prob_file: prob_file.csv
+seed: 1234

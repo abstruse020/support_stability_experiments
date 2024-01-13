@@ -1,0 +1,6 @@
+gnn_evn/
+gnn_env_1/
+gnn_env_2/
+__pycache__/
+data/
+results/*/*.csv

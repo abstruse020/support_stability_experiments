@@ -1,0 +1,27 @@
+data:
+  batch_size: 16
+  name: mnist
+  num_classes: 2
+  num_features: 784
+  replace: true
+  shuffle: true
+  test_size: 1
+  train_size: 100
+description: Experiment for Variance lower bound
+epochs: 400
+exp_name: exp_mnist_l32_8_r20_s20_e400
+model:
+  layers:
+  - 32
+  - 8
+  name: fnn
+optimizer:
+  lr: 0.01
+  name: sgd
+  wt_decay: 0.0
+prob_file: prob_file.csv
+r_times: 20
+s_times: 20
+seed: 12345
+train_file: train_file.csv
+z_times: 50

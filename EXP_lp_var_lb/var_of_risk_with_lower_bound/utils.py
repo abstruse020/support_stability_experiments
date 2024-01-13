@@ -1,0 +1,47 @@
+import sys
+import yaml
+import json
+from types import SimpleNamespace
+
+import torch
+
+def get_config(config_path = 'config.yaml'):
+    with open(config_path, 'r') as f:
+        contents = yaml.safe_load(f)
+    contents = json.loads(json.dumps(contents), object_hook = lambda x: SimpleNamespace(**x))
+    return contents
+
+def config_to_dict(config):
+    return {
+        k: config_to_dict(v) if isinstance(v, SimpleNamespace) else v for k,v in vars(config).items()
+    }
+
+def save_config(config, path = './results/config.yaml'):
+    config_dict = config_to_dict(config)
+    with open(path, '+w') as f:
+        yaml.dump(config_dict, f)
+
+
+## Custom steep loss function
+class StepLoss(torch.nn.Module):
+    def __init__(self, device) -> None:
+        super(StepLoss, self).__init__()
+
+        self.weight = 6
+        self.device = device
+    
+    def forward(self, op, target):
+        B = op.shape[0]
+        op = op * self.weight
+        # for numerical stability
+        op = op - op.max(dim = 1, keepdim=True).values
+        # print('new op:', op)
+        op_exp = torch.exp(op)
+        op_exp_sum = torch.sum(op_exp, dim=1, keepdim=True)
+        sm_output = 1. - op_exp/op_exp_sum
+        # print('probs:', sm_output)
+        loss = torch.tensor([0.]).to(self.device)
+        for i in range(B):
+            loss += sm_output[i][target[i].item()]
+        loss = loss/B
+        return loss
