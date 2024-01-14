@@ -4,6 +4,8 @@ import json
 from types import SimpleNamespace
 
 import torch
+from torch.linalg import matrix_norm as mx_norm
+
 
 def get_config(config_path = 'config.yaml'):
     with open(config_path, 'r') as f:
@@ -35,7 +37,6 @@ class StepLoss(torch.nn.Module):
         op = op * self.weight
         # for numerical stability
         op = op - op.max(dim = 1, keepdim=True).values
-        # print('new op:', op)
         op_exp = torch.exp(op)
         op_exp_sum = torch.sum(op_exp, dim=1, keepdim=True)
         sm_output = 1. - op_exp/op_exp_sum
@@ -45,3 +46,27 @@ class StepLoss(torch.nn.Module):
             loss += sm_output[i][target[i].item()]
         loss = loss/B
         return loss
+
+# To get a dictionary of model gradients, frobenious norm and spectral norm
+def get_model_grads(model):
+    f_norm = {}
+    m_norm = {}
+    for idx, param in enumerate(model.parameters()):
+        f_norm[idx] = param.grad.norm(p='fro')
+        if len(param.grad.shape) > 1:
+            m_norm[idx] = mx_norm(param.grad, ord=2)
+    
+    grads = [(f'fro{key}', value.item()) for key, value in f_norm.items()]
+    grads += [(f'spe{key}', value.item()) for key, value in m_norm.items()]
+    return dict(grads)
+
+def get_grads_column(config):
+    
+    model_name = config.model.name
+    num_features = config.data.num_features
+    num_classes = config.data.num_classes
+    layers = config.model.layers
+
+    model = get_model(model_name, num_features, num_classes, layers)
+    raise Exception('Not Implemented')
+    ## This is only for fully connected networks

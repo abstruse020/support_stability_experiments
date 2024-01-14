@@ -79,14 +79,18 @@ def randomise_label(data):
         data[i][1] = lable
     return data
 
-def pick_train_set(data_dist, train_size, random_seed = None, replace=True):
-    if train_size > len(data_dist):
-        raise Exception('Train size too large')
+def pick_train_set(data_dist, train_size, test_idx, random_seed = None, replace=True):
+    data_dist_size = len(data_dist)
+    if train_size + len(test_idx) > data_dist_size:
+        raise Exception('Train + test size too large', f'{train_size} + {len(test_idx)} > {data_dist_size}')
+    
+    train_indexes = list(set(range(data_dist_size)) - set(test_idx))
     if random_seed is None:
-        picked_index = np.random.choice(range(len(data_dist)), train_size, replace=replace)
+        picked_index = np.random.choice(train_indexes, train_size, replace=replace)
     else:
         rnp = np.random.RandomState(random_seed)
-        picked_index = rnp.choice(range(len(data_dist)), train_size, replace=replace)
+        picked_index = rnp.choice(train_indexes, train_size, replace=replace)
+
     train_set = list(map(lambda i: data_dist[i], picked_index))
     return train_set
 
@@ -100,16 +104,23 @@ def pick_train_test_set(data_dist, train_size, z_times, random_seed = None, repl
     else:
         rnp = np.random.RandomState(random_seed)
         picked_index = rnp.choice(range(len(data_dist)), train_size + z_times, replace=replace)
-    # pdb.set_trace()
+    
     train_set = list(map(lambda i: data_dist[i], picked_index[:train_size]))
     test_set = list(map(lambda i: data_dist[i], picked_index[train_size:]))
     return train_set, test_set
+
+def pick_test_idx(data_dist_size, test_size, random_seed = None):
+
+    if test_size > data_dist_size:
+        raise Exception('Test Size too large')
     
-    # train_idx = picked_index[: train_size]
-    # test_idx  = picked_index[train_size: ]
-
-    # return train_idx, test_idx
-
+    if random_seed is None:
+        test_idx = np.random.choice(range(data_dist_size), test_size, replace=False)
+    else:
+        rnp = np.random.RandomState(random_seed)
+        test_idx = rnp.choice(range(data_dist_size), test_size, replace=False)
+    
+    return test_idx
 
 ## Just Visualization
 def show_some_data(data_dist, n_plots = (4,4), figsize=(10,10), path=None):

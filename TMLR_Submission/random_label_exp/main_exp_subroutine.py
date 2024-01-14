@@ -9,8 +9,8 @@ import numpy as np
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 
-from dataset import get_dataset, pick_train_set, pick_train_test_set, to_dataloader, show_some_data
-from utils import get_config, StepLoss
+from dataset import get_dataset, pick_train_set, pick_test_idx, to_dataloader, show_some_data
+from utils import get_config, StepLoss, get_model_grads
 from model import get_model
 
 
@@ -58,7 +58,7 @@ def test_once(model, data_loader, loss_fn, device):
     loss = running_loss/ len(data_loader)
     return loss, acc
 
-def prob_z_given_SR(config, train_loader, data_dist, r_id, s_id, params,  device, prob_file, train_file = 'train_file.csv', test_set = None):
+def prob_z_given_SR(config, train_loader, test_idx, data_dist, r_id, s_id, params, device, prob_file = 'prob_file.csv', train_file = 'train_file.csv'):
 
     # print('Setting local seed:', local_seed)
     # torch.manual_seed(local_seed)
@@ -119,60 +119,71 @@ def prob_z_given_SR(config, train_loader, data_dist, r_id, s_id, params,  device
             break
 
     ## Calculating Loss over multiple z (points from data distribution)
-    if test_set is None:
-        z_times = config.z_times
-        z_ids = np.random.randint(0, len(data_dist), z_times)
-        test_set = data_dist
-    else:
-        z_ids = range(0, len(test_set))
+    z_ids = test_idx
     
+    ## IMP: If model has dropout then ??? (might have to use model.train() itself)
     model.eval()
     loss_list = []
     label_list = []
-    
-    ## IMP: Remove this later
-    # pdb.set_trace()
+    grad_list = []
 
-    with torch.no_grad():
-        for z_id in z_ids:
-            x, y = test_set[z_id][0].to(device), torch.tensor(test_set[z_id][1]).to(device)
-            output = model(x.unsqueeze(dim=0))
-            loss = loss_fn(output, y.unsqueeze(dim=0))
-            
-            loss_list.append(loss.item())
-            label_list.append(y.item())
+    # with torch.no_grad():
+    #     for z_id in z_ids:
+    #         x, y = data_dist[z_id][0].to(device), torch.tensor(data_dist[z_id][1]).to(device)
+    #         output = model(x.unsqueeze(dim=0))
+    #         loss = loss_fn(output, y.unsqueeze(dim=0))
+    #         raise Exception('Trying to get gradients to compute Lg')
+    #         loss_list.append(loss.item())
+    #         label_list.append(y.item())
     
+    for z_id in z_ids:
+        model.zero_grad()
+        ## Just checknig, should be zero
+        # temp_grads = get_model_grads(model)
+
+        x, y = data_dist[z_id][0].to(device), torch.tensor(data_dist[z_id][1]).to(device)
+        output = model(x.unsqueeze(dim=0))
+        loss = loss_fn(output, y.unsqueeze(dim=0))
+        loss.backward()
+        ## Should not be zero
+        grads = get_model_grads(model)
+        
+        grad_list.append(grads)
+        loss_list.append(loss.item())
+        label_list.append(y.item())
+
     ## Writing to Prob file
     contents = ''
-    for loss, label, z_id in zip(loss_list, label_list, z_ids):
+    for loss, label, z_id, grads in zip(loss_list, label_list, z_ids, grad_list):
         temp_contents = [r_id, len(train_loader.dataset), s_id, z_id, loss, label]
+        temp_contents +=  [grads['fro0'], grads['fro1'],grads['fro2'],grads['fro3'],grads['spe0'],grads['spe2']]
         temp_contents = ','.join([str(it) for it in temp_contents]) + '\n'
         contents += temp_contents
     with open(prob_file,'+a') as f:
         f.write(contents)
 
-def prob_zS_givenR(config, data_dist, r_id, params, device, prob_file, train_file):
+# def prob_zS_givenR(config, data_dist, r_id, params, device, prob_file, train_file):
 
-    ## Initialize
-    train_size = config.data.train_size
-    shuffle = config.data.shuffle
-    batch_size = config.data.batch_size
-    replace = config.data.replace
+#     ## Initialize
+#     train_size = config.data.train_size
+#     shuffle = config.data.shuffle
+#     batch_size = config.data.batch_size
+#     replace = config.data.replace
 
-    ## Randomly pick trian set S and call prob_z_given_SR
-    s_times = config.s_times
-    for s_id in range(s_times):
-        train_set = pick_train_set(data_dist, train_size, replace=replace)
-        # show_some_data(train_set, path='temp_img.png')
+#     ## Randomly pick trian set S and call prob_z_given_SR
+#     s_times = config.s_times
+#     for s_id in range(s_times):
+#         train_set = pick_train_set(data_dist, train_size, replace=replace)
+#         # show_some_data(train_set, path='temp_img.png')
 
-        train_loader = to_dataloader(train_set, batch_size, shuffle)
-        # dist_loader = to_dataloader(data_dist, batch_size = 64, shuffle=False)
+#         train_loader = to_dataloader(train_set, batch_size, shuffle)
+#         # dist_loader = to_dataloader(data_dist, batch_size = 64, shuffle=False)
 
-        prob_z_given_SR(config, train_loader, data_dist, r_id, s_id, params, device, prob_file, train_file)
+#         prob_z_given_SR(config, train_loader, data_dist, r_id, s_id, params, device, prob_file, train_file)
 
-    return
+#     return
 
-def p_zS_givenR_for_m(config, data_dist, r_id, params, train_sets_size, device = 'cpu', prob_file='prob_file.csv', train_file = 'train_file.csv'):
+def p_zS_givenR_for_m(config, data_dist, r_id, params, train_sets_size, device = 'cpu', prob_file='prob_file.csv', train_file = 'train_file.csv', test_idx = None):
 
     ## Initialize
     # train_size = config.data.train_size
@@ -181,19 +192,22 @@ def p_zS_givenR_for_m(config, data_dist, r_id, params, train_sets_size, device =
     replace = config.data.replace
     z_times = config.z_times
 
+    if test_idx is None:
+        test_idx = pick_test_idx(len(data_dist), z_times)
+    
     ## Set train_set size m for multiple iterations
-    for m in tqdm(train_sets_size, desc=f'loop for m'):
+    for m in tqdm(train_sets_size, desc='loop for m'):
 
         ## Randomly pick trian set S and call prob_z_given_SR
         s_times = config.s_times
         for s_id in range(s_times):
-            train_set, test_set = pick_train_test_set(data_dist, m, z_times, replace=replace)
+            train_set = pick_train_set(data_dist, m, test_idx, replace=replace)
             # show_some_data(train_set, path='temp_img.png')
 
             train_loader = to_dataloader(train_set, batch_size, shuffle)
             # dist_loader = to_dataloader(data_dist, batch_size = 64, shuffle=False)
 
-            prob_z_given_SR(config, train_loader, data_dist, r_id, s_id, params, device, prob_file, train_file, test_set=test_set)
+            prob_z_given_SR(config, train_loader, test_idx, data_dist, r_id, s_id, params, device, prob_file, train_file)
 
     return
 

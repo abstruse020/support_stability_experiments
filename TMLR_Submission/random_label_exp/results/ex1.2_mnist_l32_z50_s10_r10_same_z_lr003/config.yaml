@@ -1,0 +1,36 @@
+data:
+  batch_size: 16
+  name: mnist
+  num_classes: 2
+  num_features: 784
+  randomize: true
+  replace: false
+  shuffle: true
+  test_size: 50
+  train_sets_size:
+  - 100
+  - 150
+  - 200
+  - 250
+  - 300
+  - 350
+  - 400
+  train_size: 100
+description: Experiment for Variance lower bound given z, selecting same z for every
+  r as well
+epochs: 500
+exp_name: ex1.2_mnist_l32_z50_s10_r10_same_z_lr003
+model:
+  layers:
+  - 32
+  name: fnn
+optimizer:
+  lr: 0.003
+  name: sgd
+  wt_decay: 0.0
+prob_file: prob_file.csv
+r_times: 10
+s_times: 10
+seed: 1234
+train_file: train_file.csv
+z_times: 50
