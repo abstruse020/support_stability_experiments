@@ -47,7 +47,7 @@ class StepLoss(torch.nn.Module):
         loss = loss/B
         return loss
 
-# To get a dictionary of model gradients, frobenious norm and spectral norm
+## To get a dictionary of model gradients, frobenious norm and spectral norm
 def get_model_grads(model):
     f_norm = {}
     m_norm = {}
@@ -67,6 +67,6 @@ def get_grads_column(config):
     num_classes = config.data.num_classes
     layers = config.model.layers
 
-    model = get_model(model_name, num_features, num_classes, layers)
     raise Exception('Not Implemented')
+    model = get_model(model_name, num_features, num_classes, layers)
     ## This is only for fully connected networks

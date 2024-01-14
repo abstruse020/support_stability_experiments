@@ -13,14 +13,21 @@ from dataset import get_dataset, show_some_data, pick_test_idx
 from utils import get_config, save_config
 from model import get_model
 
-
+import argparse
 from tqdm import  tqdm
 
-device = torch.device('cuda:3' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
+
+## Arguments
+parser = argparse.ArgumentParser()
+parser.add_argument('config', help='config file path for experiment')
+args = parser.parse_args()
+
+
+## get config from file
+config = get_config(args.config)
 
 ## Exp details
-config = get_config()
-
 exp_name = config.exp_name
 exp_dir = 'results/' + exp_name + '/'
 
@@ -119,5 +126,5 @@ def prob_zSR_for_m(config, device, prob_file, train_file):
         
     return
 
-### IMP: Uncomment this for exp2, as train_set size increases i.e., m increases
+## Main run:
 prob_zSR_for_m(config, device, prob_file, train_file)

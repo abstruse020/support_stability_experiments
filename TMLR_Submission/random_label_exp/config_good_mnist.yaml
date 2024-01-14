@@ -1,0 +1,37 @@
+data:
+  batch_size: 8
+  name: mnist
+  num_classes: 2
+  num_features: 784
+  randomize: false
+  replace: false
+  shuffle: true
+  test_size: 50
+  train_sets_size:
+  - 100
+  - 200
+  - 400
+  - 600
+  - 800
+  - 1000
+  - 1200
+  - 1400
+  train_size: 100
+description: Experiment (Non Random/Good MNIST) for direct gradient calculation and
+  also its lowerbound variance calculation
+epochs: 500
+exp_name: ex2_mnist_l128_lr003_b8_mv2_g
+model:
+  layers:
+  - 128
+  name: fnn
+optimizer:
+  lr: 0.003
+  name: sgd
+  wt_decay: 0.0
+prob_file: prob_file.csv
+r_times: 10
+s_times: 5
+seed: 1234
+train_file: train_file.csv
+z_times: 50

@@ -25,13 +25,13 @@ device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
 
 details = {}
 details['use_db'] = 'fashion_mnist'
-details['result_root_dir']='results/t2/'
+details['result_root_dir']='results/t2.2/'
 details['result_path']='try2f_t8_r.4'
 details['ratio'] = 0.4
 details['book_keep_freq'] = 20
 details['g_times'] = 8
 details['g_epochs'] = 1
-details['alpha_0']= 0.001
+details['alpha_0']= 0.0001
 details['freq_reduce_by'] = 20
 details['freq_reduce_after'] = 100
 
@@ -40,6 +40,23 @@ details['stop_hess_computation'] = 20000 ## Stop computing hessian after calcula
 
 details['g_weight'] = int(details['ratio']*20000/(784+10))
 print(f'selected weight:{details["g_weight"]}')
+
+
+if os.path.isdir(details['result_root_dir']):
+    print(f'Folder already exists, want to override files of \'{details["result_root_dir"]}\'? (y/n)')
+    response = input()
+    if response == 'y':
+        print('#'*20,'Continuing...', '#'*20, '\n\n')
+    elif response == 'n':
+        print('#'*20,'Exitting...', '#'*20, '\n\n')
+        exit()
+    else:
+        print('#'*20,'Invalid Response, Exitting...', '#'*20, '\n\n')
+        exit()
+else:
+    os.mkdir(details['result_root_dir'])
+    print('#'*20,f'New folder created: {details["result_root_dir"]} ', '#'*20)
+
 
 with open(details['result_root_dir']+'details_'+details['result_path']+'.txt', 'w+') as f:
     for key, val in details.items():
