@@ -1,0 +1,13 @@
+exp_name: exp_cora_vec1_v1_pp
+description: Experiment for GCN training on cora dataset, removeing vectors of 1s
+preprocess: True
+epochs: 100
+batch_size: 16 # Not in use
+lr: 0.01
+wt_decay: 0.0005
+data:  
+  name: planetoid
+  num_class: 7
+  num_features: 1433
+result_file: result.csv
+seed: 1234

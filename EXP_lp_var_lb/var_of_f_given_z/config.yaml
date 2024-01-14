@@ -1,0 +1,27 @@
+exp_name: ex2_mnist_l128_s10_lr003_b8_mv2_g
+description: Experiment (non-random case, good dataset)for direct gradient calculation and also its lowerbound variance calculation, increased s_times from 5 to 10
+epochs: 500
+z_times: 50
+s_times: 10
+r_times: 10
+optimizer: 
+  name: sgd
+  lr: 0.003
+  wt_decay: 0.0
+data:  
+  name: mnist
+  randomize: False
+  train_size: 100
+  test_size: 50 # not in use
+  shuffle: True
+  batch_size: 8
+  num_classes: 2
+  num_features: 784
+  train_sets_size: [100, 200, 400, 600, 800, 1000, 1200, 1400]
+  replace: False
+model:
+  name: fnn
+  layers: [128]
+train_file: train_file.csv
+prob_file: prob_file.csv
+seed: 1234

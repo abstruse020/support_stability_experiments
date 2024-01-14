@@ -1,0 +1,6 @@
+__pycache__/
+data/
+results/*/*.csv
+results/*/grad*
+results/*/hess*
+results/*/gen*

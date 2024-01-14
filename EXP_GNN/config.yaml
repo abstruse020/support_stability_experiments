@@ -1,0 +1,14 @@
+exp_name: exp_cora_vec_deg_v1.2
+description: Experiment for GCN training on cora dataset, removeing vectors of degrees i.e. sqrt(d_i + 1), copy of v1 
+epochs: 100
+batch_size: 16 # Not in use
+optimizer: 
+  name: adam
+  lr: 0.01
+  wt_decay: 0.0005
+data:  
+  name: planetoid
+  num_class: 7
+  num_features: 1433
+result_file: result.csv
+seed: 1234
