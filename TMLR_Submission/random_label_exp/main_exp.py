@@ -16,7 +16,7 @@ from model import get_model
 import argparse
 from tqdm import  tqdm
 
-device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 ## Arguments
 parser = argparse.ArgumentParser()
