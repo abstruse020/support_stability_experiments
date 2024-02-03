@@ -20,7 +20,7 @@ data:
 description: Experiment for direct gradient calculation and also its lowerbound variance
   calculation
 epochs: 500
-exp_name: ex2_mnist_l128_lr003_b8_mv2
+exp_name: ex2_mnist_l128_s10_lr003_b8_mv2
 model:
   layers:
   - 128
